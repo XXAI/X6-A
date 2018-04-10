@@ -56,12 +56,43 @@ class RegistrosReaccionController extends Controller
 
         $v = Validator::make($parametros, $reglas, $mensajes);
 
+        $usuario = Usuario::find($request->get('usuario_id'));
+
+        $usuario_admin = false;
+        $usuario_limitado = false;
+        $usuario_jurisdiccional = false;
+        $usuario_capturista = false;
+        $permiso_modulo = false;
+        
+        $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
+
+        foreach ($usuario_general->roles as $index => $rol) {
+            foreach ($rol->permisos as $permiso) {
+                if($permiso->id == 'T2i7dkAEI3I3Rp9rKipW0RHf5SYXNLqz'){ $usuario_limitado = true; }
+                if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
+                if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
+                if($permiso->id == 'nmscPx2QPjOcF26qIHI1KS8XTuftlPCn'){ $usuario_capturista = true; }
+                if($permiso->id == 'VpjLXVr2UgsbkjFqUTcokgi6d0HK8vaJ'){ $permiso_modulo = true; }
+            }
+        }
+
+        if(!$permiso_modulo)
+        {
+            return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
+        }
+        
+        if($usuario->su == 0 && $usuario_admin)
+            if($usuario->id_jurisdiccion != $parametros['id_jurisdiccion'])
+                return Response::json(['error' => "Ha elegido una jurisdiccion que no le corresponde, por favor no intente realizar cambios no permitidos."], 500);
+
         if ($v->fails()) {
             return Response::json(['error' => $v->errors()], HttpResponse::HTTP_CONFLICT);
         }
 
         try {
-
+            if($parametros['mes'] > date("n"))
+                return Response::json(['error' => "No se puede ingresar un mes posterior al mes actual"], 500);
+                
             $directorio_destino_path = "reaccion";
             if(!isset($_FILES['file']))
             {
@@ -74,39 +105,7 @@ class RegistrosReaccionController extends Controller
             $parametros['extension'] = $extension[1];
             $parametros['peso'] = $_FILES['file']['size'];
 
-            $usuario = Usuario::find($request->get('usuario_id'));
-
-            /*$privilegios = registro::where("usuario_id", $request->get('usuario_id'))->where("avance_id", $parametros['avance_id'])->first();
-            
-            $general = false;
-            $permisos = [];
-            $usuario_general = Usuario::with(['roles.permisos'=>function($permisos){
-                $permisos->where('id','79B3qKuUbuEiR2qKS0CFgHy2zRWfmO4r');
-            }])->find($request->get('usuario_id'));
-
-            foreach ($usuario_general->roles as $index => $rol) {
-                foreach ($rol->permisos as $permiso) {
-                    $permisos[$permiso->id] = true;
-
-                    if(count($permisos)){
-                        $general = true;
-                    }
-                }
-            }
-            if(count($permisos)){
-                $general = true;
-            }
-
-            if($general || $usuario->su == 1 || (isset($privilegios)  && $privilegios->agregar == "1") )
-            {
-                $avance_detalle = AvanceDetalles::create($parametros);
-
-                 \Request::file('file')->move($directorio_destino_path, $avance_detalle->id.".".$extension[1]);
-            }else
-            {
-                DB::rollBack();
-                return Response::json('No tiene privilegios para realizar esta accion.', 500);
-            }*/    
+                    
             $parametros['archivo'] = $extension[0].".".$extension[1];
             $registro = Reaccion::create($parametros);
 
@@ -137,6 +136,35 @@ class RegistrosReaccionController extends Controller
         ];
 
         $parametros = Input::all();
+        $usuario = Usuario::find($request->get('usuario_id'));
+
+        $usuario_admin = false;
+        $usuario_limitado = false;
+        $usuario_jurisdiccional = false;
+        $usuario_capturista = false;
+        $permiso_modulo = false;
+        
+        $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
+
+        foreach ($usuario_general->roles as $index => $rol) {
+            foreach ($rol->permisos as $permiso) {
+                if($permiso->id == 'T2i7dkAEI3I3Rp9rKipW0RHf5SYXNLqz'){ $usuario_limitado = true; }
+                if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
+                if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
+                if($permiso->id == 'nmscPx2QPjOcF26qIHI1KS8XTuftlPCn'){ $usuario_capturista = true; }
+                if($permiso->id == 'oliApJdTJLV5UcgUvGA7zvt7lNeUh4Q2'){ $permiso_modulo = true; }
+            }
+        }
+
+        if(!$permiso_modulo)
+        {
+            return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
+        }
+        
+        if($usuario->su == 0 && $usuario_admin)
+            if($usuario->id_jurisdiccion != $parametros['id_jurisdiccion'])
+                return Response::json(['error' => "Ha elegido una jurisdiccion que no le corresponde, por favor no intente realizar cambios no permitidos."], 500);
+        
 
         $v = Validator::make($parametros, $reglas, $mensajes);
 
@@ -181,6 +209,31 @@ class RegistrosReaccionController extends Controller
         try {
         	
             $registro = Reaccion::find($id);
+
+            $usuario = Usuario::find($request->get('usuario_id'));
+
+            $usuario_admin = false;
+            $usuario_limitado = false;
+            $usuario_jurisdiccional = false;
+            $usuario_capturista = false;
+            $permiso_modulo = false;
+            
+            $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
+    
+            foreach ($usuario_general->roles as $index => $rol) {
+                foreach ($rol->permisos as $permiso) {
+                    if($permiso->id == 'T2i7dkAEI3I3Rp9rKipW0RHf5SYXNLqz'){ $usuario_limitado = true; }
+                    if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
+                    if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
+                    if($permiso->id == 'nmscPx2QPjOcF26qIHI1KS8XTuftlPCn'){ $usuario_capturista = true; }
+                    if($permiso->id == 'gihDKPxwrDNVqNoZ9XAKDQqP8AHj5UCJ'){ $permiso_modulo = true; }
+                }
+            }
+    
+            if(!$permiso_modulo)
+            {
+                return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
+            }
 
             if($registro)
             {

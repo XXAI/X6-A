@@ -8,7 +8,7 @@ use Illuminate\Http\Response as HttpResponse;
 use JWTAuth;
 
 use App\Http\Requests;
-use App\Models\Dictamen, App\Models\ProgramacionTema;
+use App\Models\Dictamen, App\Models\ProgramacionTema, App\Models\Usuario;
 
 use Illuminate\Support\Facades\Input;
 use \Validator,\Hash, \Response, DB;
@@ -55,7 +55,31 @@ class DictamenController extends Controller
                                               DB::raw("(select count(*) from dictamen where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=11) as noviembre_acumulado"),
                                               DB::raw("(select count(*) from dictamen where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=12) as diciembre_acumulado"),
                                               DB::raw("(select count(*) from dictamen where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null) as total_acumulado"));
+        
+        $usuario = Usuario::find($request->get('usuario_id'));
 
+        $usuario_admin = false;
+        $usuario_limitado = false;
+        $usuario_jurisdiccional = false;
+        $usuario_capturista = false;
+        $permisos = [];
+        
+        $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
+
+        foreach ($usuario_general->roles as $index => $rol) {
+            foreach ($rol->permisos as $permiso) {
+                if($permiso->id == 'T2i7dkAEI3I3Rp9rKipW0RHf5SYXNLqz'){ $usuario_limitado = true; }
+                if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
+                if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
+                if($permiso->id == 'nmscPx2QPjOcF26qIHI1KS8XTuftlPCn'){ $usuario_capturista = true; }
+            }
+        }
+
+        if($usuario_capturista || ($usuario_admin && $usuario->su == 0))
+        {
+            $verificacion = $verificacion->where('id_jurisdiccion',$usuario->id_jurisdiccion);
+        }
+        
         if ($parametros['q']) {
             $verificacion =  $verificacion->where(function($query) use ($parametros) {
                     $query->where('descripcion','LIKE',"%".$parametros['q']."%");

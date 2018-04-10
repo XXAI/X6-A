@@ -21,7 +21,7 @@ class CreateTableDictamen extends Migration
             $table->string('usuario_id');
             $table->string('anio', 4);
             $table->string('mes',2);
-            $table->string('folio');
+            $table->string('oficio');
             $table->string('archivo');
             
             $table->timestamps();

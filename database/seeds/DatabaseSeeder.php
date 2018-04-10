@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         $this->call(TemasSeeder::class);
         $this->call(AmbitoRiesgosSeeder::class);
         $this->call(EjecutivoSeeder::class);
+        $this->call(tipoProgramacionSeeder::class);
         
     }
 }

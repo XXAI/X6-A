@@ -20,6 +20,10 @@ class ReporteProyectoController extends Controller
         $parametros = $parametros = Input::only('status','q','page','per_page', 'anio', 'jurisdiccion', "tema");
 
         $respuesta = [];
+        $tabla = [];
+
+        $tabla = $this->reset_variables();
+        
         $datos = ProgramacionTema::with("tema")->where("anio", date("Y"))
                                    ->where("id_tema", $parametros['tema'])
                                    ->whereNull("deleted_at")
@@ -30,6 +34,7 @@ class ReporteProyectoController extends Controller
                                    ->get();
 
         foreach ($datos as $key => $value) {
+            $tabla[0]['tema'] = $value->tema['descripcion']; 
             if($value['id_tipo_programacion'] == 1 )
             {
                 $registro = Verificacion::where("anio", date("Y"))
@@ -42,7 +47,10 @@ class ReporteProyectoController extends Controller
                 $registro['id_tipo_programacion'] = $value['id_tipo_programacion'];                    
                 $registro['tema'] = $value->tema['descripcion'];                    
                 $registro['tipo'] = "Verificación";                    
-                $respuesta[] = $registro;                    
+                $respuesta[] = $registro;    
+                
+                $tabla[0]['verificaciones']['total'] = $value['total'];
+                $tabla[0]['verificaciones']['acumulado'] = $registro['acumulado'];
             }
             if($value['id_tipo_programacion'] == 2 )
             {
@@ -58,7 +66,14 @@ class ReporteProyectoController extends Controller
                 $registro['id_tipo_programacion'] = $value['id_tipo_programacion']; 
                 $registro['tema'] = $value->tema['descripcion']; 
                 $registro['tipo'] = "Muestra";                                      
-                $respuesta[] = $registro;                    
+                $respuesta[] = $registro;    
+                
+                $tabla[0]['muestra']['total'] = $value['total'];
+                $tabla[0]['muestra']['acumulado'] = $registro['acumulado'];
+                
+                $tabla[0]['muestra_acumulado']['dentro'] = $registro['dentro_especificaciones'];
+                $tabla[0]['muestra_acumulado']['fuera'] = $registro['fuera_especificaciones'];
+                
             }
             if($value['id_tipo_programacion'] == 3 )
             {
@@ -72,7 +87,11 @@ class ReporteProyectoController extends Controller
                 $registro['id_tipo_programacion'] = $value['id_tipo_programacion'];         
                 $registro['tema'] = $value->tema['descripcion'];       
                 $registro['tipo'] = "Capacitación";                            
-                $respuesta[] = $registro;                    
+                $respuesta[] = $registro;             
+                
+                $tabla[0]['capacitacion']['total'] = $value['total'];
+                $tabla[0]['capacitacion']['acumulado'] = $registro['acumulado'];
+
             }
             if($value['id_tipo_programacion'] == 4 )
             {
@@ -86,7 +105,10 @@ class ReporteProyectoController extends Controller
                 $registro['id_tipo_programacion'] = $value['id_tipo_programacion'];   
                 $registro['tema'] = $value->tema['descripcion']; 
                 $registro['tipo'] = "Dictamen";                                        
-                $respuesta[] = $registro;                    
+                $respuesta[] = $registro; 
+                
+                $tabla[0]['dictamen']['total'] = $value['total'];
+                $tabla[0]['dictamen']['acumulado'] = $registro['acumulado'];
             }
             if($value['id_tipo_programacion'] == 5 )
             {
@@ -100,9 +122,31 @@ class ReporteProyectoController extends Controller
                 $registro['id_tipo_programacion'] = $value['id_tipo_programacion'];               
                 $registro['tema'] = $value->tema['descripcion'];        
                 $registro['tipo'] = "Reacción Adversa";                     
-                $respuesta[] = $registro;                    
+                $respuesta[] = $registro;  
+                
+                $tabla[0]['reaccion']['total'] = $value['total'];
+                $tabla[0]['reaccion']['acumulado'] = $registro['acumulado'];
             }
-        }                            
-        return Response::json([ 'data' => $respuesta],200);                  
+        }    
+                     
+        return Response::json([ 'data' => array('datos'=>$respuesta, 'table'=>$tabla)],200);                  
+    }
+
+    private function reset_variables()
+    {
+        $table = [];
+        $table[0]['tema'] = ""; 
+        $table[0]['muestra']['total'] = 0;
+        $table[0]['muestra']['acumulado'] = 0;
+        $table[0]['muestra_acumulado']['dentro'] = 0;
+        $table[0]['muestra_acumulado']['fuera'] = 0;
+        $table[0]['capacitacion']['total'] = 0;
+        $table[0]['capacitacion']['acumulado'] = 0;
+        $table[0]['dictamen']['total'] = 0;
+        $table[0]['dictamen']['acumulado'] = 0;
+        $table[0]['reaccion']['total'] = 0;
+        $table[0]['reaccion']['acumulado'] = 0;
+
+        return $table;
     }
 }

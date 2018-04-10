@@ -8,7 +8,7 @@ use Illuminate\Http\Response as HttpResponse;
 use JWTAuth;
 
 use App\Http\Requests;
-use App\Models\Verificacion, App\Models\ProgramacionTema;
+use App\Models\Verificacion, App\Models\ProgramacionTema, App\Models\Usuario;
 
 use Illuminate\Support\Facades\Input;
 use \Validator,\Hash, \Response, DB;
@@ -20,49 +20,6 @@ class VerificacionController extends Controller
     {
         $parametros = $parametros = Input::only('status','q','page','per_page', 'identificador', 'jurisdiccion');
 
-        /*$verificacion = Verificacion::with("jurisdiccion")
-                                    ->join("tema", "tema.id", "=", "verificacion.id_tema")
-                                    ->whereNull("verificacion.deleted_at");
-
-        if ($parametros['q']) {
-            $verificacion =  $verificacion->where(function($query) use ($parametros) {
-                    $query->where('descripcion','LIKE',"%".$parametros['q']."%");
-                });
-        }
-
-        if ($parametros['jurisdiccion']) {
-            $verificacion =  $verificacion->where('id_jurisdiccion', $parametros['jurisdiccion']);
-        }
-                           
-        if(isset($parametros['page'])){
-            $resultadosPorPagina = isset($parametros["per_page"])? $parametros["per_page"] : 25;
-            $verificacion = $verificacion->where("anio", date("Y"))
-                        ->select(
-                            'tema.descripcion',
-                            'id_tema',
-                            'id_jurisdiccion',
-                            'anio',
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null and c.mes=1) as enero'),
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null and c.mes=2) as febrero'),
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null and c.mes=3) as marzo'),
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null and c.mes=4) as abril'),
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null and c.mes=5) as mayo'),
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null and c.mes=6) as junio'),
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null and c.mes=7) as julio'),
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null and c.mes=8) as agosto'),
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null and c.mes=9) as septiembre'),
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null and c.mes=10) as octubre'),
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null and c.mes=11) as noviembre'),
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null and c.mes=12) as diciembre'),
-                            DB::raw('(select count(*) from verificacion c where verificacion.anio=c.anio and verificacion.id_jurisdiccion=c.id_jurisdiccion and verificacion.id_tema=c.id_tema and c.deleted_at is null) as total'))
-                        ->groupBy('id_tema')
-                        ->groupBy('id_jurisdiccion')
-                        ->groupBy('id_tema');
-            $verificacion = $verificacion->paginate($resultadosPorPagina);
-        } else {
-            $verificacion = $verificacion->get();
-        } */
-        
         $verificacion = ProgramacionTema::with("jurisdiccion", "tipo_programacion");
         $verificacion = $verificacion->join("tema", "tema.id", "=", "programacion_jurisdiccion.id_tema")
                                     ->where('id_tipo_programacion', 1) 
@@ -98,14 +55,39 @@ class VerificacionController extends Controller
                                               DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=11) as noviembre_acumulado"),
                                               DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=12) as diciembre_acumulado"),
                                               DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null) as total_acumulado"));
+        
+        $usuario = Usuario::find($request->get('usuario_id'));
 
+        $usuario_admin = false;
+        $usuario_limitado = false;
+        $usuario_jurisdiccional = false;
+        $usuario_capturista = false;
+        $permisos = [];
+        
+        $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
+
+        foreach ($usuario_general->roles as $index => $rol) {
+            foreach ($rol->permisos as $permiso) {
+                if($permiso->id == 'T2i7dkAEI3I3Rp9rKipW0RHf5SYXNLqz'){ $usuario_limitado = true; }
+                if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
+                if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
+                if($permiso->id == 'nmscPx2QPjOcF26qIHI1KS8XTuftlPCn'){ $usuario_capturista = true; }
+            }
+        }
+
+        if($usuario_capturista || ($usuario_admin && $usuario->su == 0))
+        {
+            $verificacion = $verificacion->where('id_jurisdiccion',$usuario->id_jurisdiccion);
+        }
+        
+        
         if ($parametros['q']) {
             $verificacion =  $verificacion->where(function($query) use ($parametros) {
                     $query->where('descripcion','LIKE',"%".$parametros['q']."%");
                 });
         }
 
-        if ($parametros['jurisdiccion']) {
+        if ($parametros['jurisdiccion'] && !$usuario_capturista) {
             $verificacion =  $verificacion->where('id_jurisdiccion', $parametros['jurisdiccion']);
         }
         if(isset($parametros['page'])){
