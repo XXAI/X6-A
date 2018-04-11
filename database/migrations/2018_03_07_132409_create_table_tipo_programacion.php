@@ -16,6 +16,7 @@ class CreateTableTipoProgramacion extends Migration
             
             $table->increments('id');
             $table->string('descripcion');
+            $table->smallInteger('tiempo_captura');
             $table->timestamps();
             $table->softDeletes();
         });

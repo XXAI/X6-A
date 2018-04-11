@@ -17,7 +17,6 @@ class CreateTablaTemas extends Migration
             $table->increments('id');
             $table->unsignedInteger('id_ambito_riesgo');
             $table->string('descripcion');
-            $table->smallInteger('tiempo_captura');
             $table->timestamps();
             $table->softDeletes();
         });
