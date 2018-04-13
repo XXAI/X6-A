@@ -71,10 +71,12 @@ class RegistrosDictamenController extends Controller
             }
         }
 
-        if(!$permiso_modulo)
-        {
-            return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
-        }
+        if($usuario->su == 0)
+                if(!$usuario_admin)
+                    if(!$usuario_capturista)
+                        if(!$permiso_modulo)
+                            return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
+        
         
         if($usuario->su == 0 && $usuario_admin)
             if($usuario->id_jurisdiccion != $parametros['id_jurisdiccion'])
@@ -82,32 +84,6 @@ class RegistrosDictamenController extends Controller
         
         $v = Validator::make($parametros, $reglas, $mensajes);
 
-        $usuario = Usuario::find($request->get('usuario_id'));
-
-        $usuario_admin = false;
-        $usuario_limitado = false;
-        $usuario_jurisdiccional = false;
-        $usuario_capturista = false;
-        $permiso_modulo = false;
-        
-        $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
-
-        foreach ($usuario_general->roles as $index => $rol) {
-            foreach ($rol->permisos as $permiso) {
-                if($permiso->id == 'T2i7dkAEI3I3Rp9rKipW0RHf5SYXNLqz'){ $usuario_limitado = true; }
-                if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
-                if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
-                if($permiso->id == 'nmscPx2QPjOcF26qIHI1KS8XTuftlPCn'){ $usuario_capturista = true; }
-                if($permiso->id == 'VpjLXVr2UgsbkjFqUTcokgi6d0HK8vaJ'){ $permiso_modulo = true; }
-            }
-        }
-
-        if(!$permiso_modulo)
-        {
-            return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
-        }
-        
-       
         if ($v->fails()) {
             return Response::json(['error' => $v->errors()], HttpResponse::HTTP_CONFLICT);
         }
@@ -186,10 +162,12 @@ class RegistrosDictamenController extends Controller
             }
         }
 
-        if(!$permiso_modulo)
-        {
-            return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
-        }
+        if($usuario->su == 0)
+                if(!$usuario_admin)
+                    if(!$usuario_capturista)
+                        if(!$permiso_modulo)
+                            return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
+        
         
         if($usuario->su == 0 && $usuario_admin)
             if($usuario->id_jurisdiccion != $parametros['id_jurisdiccion'])
@@ -336,10 +314,12 @@ class RegistrosDictamenController extends Controller
                 }
             }
     
-            if(!$permiso_modulo)
-            {
-                return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
-            }
+           if($usuario->su == 0)
+                if(!$usuario_admin)
+                    if(!$usuario_capturista)
+                        if(!$permiso_modulo)
+                            return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
+            
 
             if($registro)
             {
@@ -478,7 +458,7 @@ class RegistrosDictamenController extends Controller
                 $directorio_path = "dictamen/".$carpeta;
                 $extension = explode(".", strtolower($registro->archivo));
                 
-                echo $pathToFile = $directorio_path."//".$id.".".$extension[1];
+                $pathToFile = $directorio_path."//".$id.".".$extension[1];
                 if(file_exists($pathToFile))
                 {
                     if(!file_exists($pathToFile))

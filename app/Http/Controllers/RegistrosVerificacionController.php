@@ -192,10 +192,12 @@ class RegistrosVerificacionController extends Controller
             }
         }
 
-        if(!$permiso_modulo)
-        {
-            return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
-        }
+        if($usuario->su == 0)
+            if(!$usuario_admin)
+                if(!$usuario_capturista)
+                    if(!$permiso_modulo)
+                        return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
+        
         
         if($usuario->su == 0 && $usuario_admin)
             if($usuario->id_jurisdiccion != $parametros['id_jurisdiccion'])
@@ -274,10 +276,11 @@ class RegistrosVerificacionController extends Controller
                 }
             }
     
-            if(!$permiso_modulo)
-            {
+            if($usuario->su == 0)
+                if(!$usuario_admin)
+                    if(!$usuario_capturista)
+                        if(!$permiso_modulo)
                 return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
-            }
             
             if($verificacion)
             {
