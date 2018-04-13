@@ -97,10 +97,11 @@ class RegistrosVerificacionController extends Controller
             }
         }
 
-        if(!$permiso_modulo)
-        {
-            return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
-        }
+        if($usuario->su == 0)
+            if(!$usuario_admin)
+                if(!$usuario_capturista)
+                    if(!$permiso_modulo)
+                        return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
 
         $v = Validator::make($parametros, $reglas, $mensajes);
 
