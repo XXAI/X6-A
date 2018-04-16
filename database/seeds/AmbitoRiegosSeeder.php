@@ -46,11 +46,6 @@ class AmbitoRiegosSeeder extends Seeder
                 'id' => '7',
                 'id_ejecutivo' => '3',
                 'descripcion' => 'Exposición a riesgos sanitarios laborales'
-            ],
-            [
-                'id' => '8',
-                'id_ejecutivo' => '3',
-                'descripcion' => 'Exposición a riesgos sanitarios laborales'
             ]
         ]);
     }

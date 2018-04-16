@@ -23,10 +23,6 @@ class EjecutivoSeeder extends Seeder
             [
                 'id' => '3',
                 'descripcion' => 'Ejecutivo 3'
-            ],
-            [
-                'id' => '4',
-                'descripcion' => 'Ejecutivo 4'
             ]
         ]);
     }

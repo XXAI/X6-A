@@ -8,7 +8,7 @@ use Illuminate\Http\Response as HttpResponse;
 use JWTAuth;
 
 use App\Http\Requests;
-use App\Models\ProgramacionTema, App\Models\Usuario, App\Models\Muestra, App\Models\Verificacion, App\Models\Capacitacion, App\Models\Dictamen, App\Models\Reaccion;
+use App\Models\ProgramacionTema, App\Models\Usuario, App\Models\Muestra, App\Models\Verificacion, App\Models\Capacitacion, App\Models\Dictamen, App\Models\Reaccion, App\Models\DictamenArchivo, App\Models\TipoSeguimiento;
 
 use Illuminate\Support\Facades\Input;
 use \Validator,\Hash, \Response, DB;
@@ -32,6 +32,24 @@ class ReporteProyectoController extends Controller
                                             DB::RAW("(select sum(total)) as total"))
                                    ->groupBy("id_tema", "id_tipo_programacion")           
                                    ->get();
+        
+        $datos_archivo = DictamenArchivo::whereRaw("id_dictamen in (select id from dictamen where id_tema='".$parametros['tema']."' and anio='".date("Y")."' and deleted_at is null)")
+                                    ->select("id_tipo_seguimiento",
+                                        DB::RAW("(select count(*)) as contador"))       
+                                    ->groupBy("id_tipo_seguimiento")   
+                                    ->get();   
+                                    
+        
+        $tipo_seguimiento = TipoSeguimiento::all();
+
+        $arreglo_detalles = Array();
+        foreach ($tipo_seguimiento as $key => $value) {
+            $arreglo_detalles[0][$value->descripcion] = 0;
+            foreach ($datos_archivo as $key2 => $value2) {
+                if($value->id == $value2->id_tipo_seguimiento)
+                    $arreglo_detalles[0][$value->descripcion] = $value2->contador;
+            }
+        }    
 
         foreach ($datos as $key => $value) {
             $tabla[0]['tema'] = $value->tema['descripcion']; 
@@ -73,6 +91,8 @@ class ReporteProyectoController extends Controller
                 
                 $tabla[0]['muestra_acumulado']['dentro'] = $registro['dentro_especificaciones'];
                 $tabla[0]['muestra_acumulado']['fuera'] = $registro['fuera_especificaciones'];
+
+                $arreglo_detalles[0]['muestra_detalles'] = $registro['dentro_especificaciones'];
                 
             }
             if($value['id_tipo_programacion'] == 3 )
@@ -129,7 +149,7 @@ class ReporteProyectoController extends Controller
             }
         }    
                      
-        return Response::json([ 'data' => array('datos'=>$respuesta, 'table'=>$tabla)],200);                  
+        return Response::json([ 'data' => array('datos'=>$respuesta, 'table'=>$tabla, 'detalles'=>$arreglo_detalles)],200);                  
     }
 
     private function reset_variables()
