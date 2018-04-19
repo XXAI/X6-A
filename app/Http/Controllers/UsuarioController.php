@@ -74,23 +74,23 @@ class UsuarioController extends Controller
             return Response::json(['error' => $v->errors()], HttpResponse::HTTP_CONFLICT);
         }
 
+       
         DB::beginTransaction();
         try {
             $inputs['servidor_id'] = env("SERVIDOR_ID");
             $inputs['password'] = Hash::make($inputs['password']);
             $usuario = Usuario::create($inputs);
-
+            
             $usuario->roles()->sync($inputs['roles']);
+            
             $arreglo_temas = [];
             foreach ($inputs['temas'] as $key => $value) {
                 $index = count($arreglo_temas);
-                $arreglo_temas[$index]['id_usuario'] = $usuario->id;
-                $arreglo_temas[$index]['id_tema'] = $value;
+                $arreglo_temas[$index]['usuario_id'] = $usuario->id;
+                $arreglo_temas[$index]['id_tema'] = $value['id'];
             }
             //
             $relacion = RelUsuarioTema::insert($arreglo_temas);
-            //$usuario->usuarioTema()->sync($inputs['temas']);
-            //$usuario->almacenes()->sync($inputs['almacenes']);
             DB::commit();
             return Response::json([ 'data' => $usuario ],200);
 
@@ -109,8 +109,6 @@ class UsuarioController extends Controller
     public function show($id)
     {
         $object = Usuario::find($id);
-
-        
         
         if(!$object ){
             
@@ -118,10 +116,12 @@ class UsuarioController extends Controller
         }
         unset($object->password);
         $object->roles;
+        $object->usuarioTema;
+
+        /*foreach ($object->usuarioTema as $key => $value) {
+            unset($object->usuarioTema[$key]['pivot']);
+        }*/
         
-        //$object->unidades_medicas = $object->unidadesMedicas()->with('almacenes')->get();
-        $object->unidades_medicas = $object->unidadesMedicas()->get();
-        //$object->almacenes;
 
         return Response::json([ 'data' => $object ], HttpResponse::HTTP_OK);
     }
@@ -154,7 +154,7 @@ class UsuarioController extends Controller
             return Response::json(['error' => "No se encuentra el recurso que esta buscando."], HttpResponse::HTTP_NOT_FOUND);
         }
 
-        $inputs = Input::only('id','servidor_id','password','nombre', 'apellidos','avatar','roles','cambiarPassword','unidades_medicas','almacenes');
+        $inputs = Input::only('id','servidor_id','password','nombre', 'apellidos','avatar','roles','cambiarPassword','temas', 'id_jurisdiccion');
 
         $v = Validator::make($inputs, $reglas, $mensajes);
 
@@ -168,24 +168,23 @@ class UsuarioController extends Controller
             $object->apellidos =  $inputs['apellidos'];
             $object->avatar =  $inputs['avatar'];
             $object->id =  $inputs['id'];
+            $object->id_jurisdiccion =  $inputs['id_jurisdiccion'];
             if ($inputs['cambiarPassword'] ){
                 $object->password = Hash::make($inputs['password']);
             }
             
             $object->save();
 
-            
-
             $object->roles()->sync($inputs['roles']);
-            $object->unidadesMedicas()->sync($inputs['unidades_medicas']);
-            //$object->almacenes()->sync($inputs['almacenes']);
 
-            /*
-            $object->roles;
-            $object->almacenes;
-            $object->unidadesMedicas()->with('almacenes');
-            unset($object->password); 
-*/
+            $arreglo_temas = [];
+            foreach ($inputs['temas'] as $key => $value) {                
+                $arreglo_temas[] = $value['id'];
+            }
+
+            $object->usuarioTema()->sync($arreglo_temas);
+            
+            //return Response::json([ 'data' => "bien hassta aca" ],500);
             DB::commit();
             return Response::json([ 'data' => $object ],200);
 

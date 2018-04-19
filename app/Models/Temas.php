@@ -17,4 +17,8 @@ class Temas extends BaseModel
     
     protected $table = 'tema';  
     protected $fillable = ["descripcion"];
+
+    public function usuarios(){
+        return $this->belongsToMany('App\Models\Usuario', 'rol_usuario_tema', 'tema_id', 'usuario_id');
+    }
 }

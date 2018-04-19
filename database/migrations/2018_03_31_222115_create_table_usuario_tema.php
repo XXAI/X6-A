@@ -15,7 +15,7 @@ class CreateTableUsuarioTema extends Migration
         Schema::create('rel_usuario_tema', function (Blueprint $table) {
             
             $table->increments('id');
-            $table->string('id_usuario');
+            $table->string('usuario_id');
             $table->unsignedInteger('id_tema');
             
             $table->timestamps();

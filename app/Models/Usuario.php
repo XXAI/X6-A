@@ -11,6 +11,8 @@ class Usuario extends BaseModel implements Authenticatable{
     protected $generarID = false;
     protected $guardarIDUsuario = false;
     protected $fillable = ["id","servidor_id","password","nombre","apellidos","avatar","su", "id_jurisdiccion"];
+
+    protected $hidden = array('pivot');
     
     public function roles(){
         return $this->belongsToMany('App\Models\Rol', 'rol_usuario', 'usuario_id', 'rol_id');
@@ -29,8 +31,10 @@ class Usuario extends BaseModel implements Authenticatable{
     }
 
     public function usuarioTema(){
-        return $this->hasMany('App\Models\RelUsuarioTema','usuario_id');
+        return $this->belongsToMany('App\Models\Temas', 'rel_usuario_tema', 'usuario_id', 'id_tema');
     }
+
+    
 
    
 

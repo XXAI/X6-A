@@ -16,6 +16,14 @@ class RelUsuarioTema extends BaseModel
 
     
     protected $table = 'rel_usuario_tema';  
-    protected $fillable = ["id_usuario", "id_tema"];
+    protected $fillable = ["usuario_id", "id_tema"];
+
+    public function Tema(){
+        return $this->hasOne('App\Models\Temas','id', 'id_tema');
+    }
+
+    public function usuarios(){
+        return $this->belongsToMany('App\Models\Usuario', 'rol_usuario_tema', 'tema_id', 'usuario_id');
+      }
 
 }

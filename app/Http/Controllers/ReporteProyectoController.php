@@ -8,7 +8,8 @@ use Illuminate\Http\Response as HttpResponse;
 use JWTAuth;
 
 use App\Http\Requests;
-use App\Models\ProgramacionTema, App\Models\Usuario, App\Models\Muestra, App\Models\Verificacion, App\Models\Capacitacion, App\Models\Dictamen, App\Models\Reaccion, App\Models\DictamenArchivo, App\Models\TipoSeguimiento;
+use App\Models\ProgramacionTema, App\Models\Usuario, App\Models\Muestra, App\Models\Verificacion, App\Models\Capacitacion;
+use App\Models\Dictamen, App\Models\Reaccion, App\Models\DictamenArchivo, App\Models\TipoSeguimiento, App\Models\Temas;
 
 use Illuminate\Support\Facades\Input;
 use \Validator,\Hash, \Response, DB;
@@ -24,6 +25,8 @@ class ReporteProyectoController extends Controller
 
         $tabla = $this->reset_variables();
         
+        $tema = Temas::find($parametros['tema']);
+        $tabla[0]['tema'] = $tema->descripcion; 
         $datos = ProgramacionTema::with("tema")->where("anio", date("Y"))
                                    ->where("id_tema", $parametros['tema'])
                                    ->whereNull("deleted_at")
@@ -51,8 +54,9 @@ class ReporteProyectoController extends Controller
             }
         }    
 
+        $bandera_acumulado = 0;    
         foreach ($datos as $key => $value) {
-            $tabla[0]['tema'] = $value->tema['descripcion']; 
+            
             if($value['id_tipo_programacion'] == 1 )
             {
                 $registro = Verificacion::where("anio", date("Y"))
@@ -69,6 +73,7 @@ class ReporteProyectoController extends Controller
                 
                 $tabla[0]['verificaciones']['total'] = $value['total'];
                 $tabla[0]['verificaciones']['acumulado'] = $registro['acumulado'];
+                $bandera_acumulado++;
             }
             if($value['id_tipo_programacion'] == 2 )
             {
@@ -166,7 +171,8 @@ class ReporteProyectoController extends Controller
         $table[0]['dictamen']['acumulado'] = 0;
         $table[0]['reaccion']['total'] = 0;
         $table[0]['reaccion']['acumulado'] = 0;
-
+        $table[0]['verificaciones']['total'] = 0;
+        $table[0]['verificaciones']['acumulado'] = 0;
         return $table;
     }
 }

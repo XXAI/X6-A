@@ -20,9 +20,12 @@ class ProgramacionTemaController extends Controller
     {
         $parametros = $parametros = Input::only('status','q','page','per_page', 'identificador', 'jurisdiccion', 'id_tipo');
 
+        $tipo_programacion = TipoProgramacion::find($parametros['id_tipo']);
+
         $programacion = ProgramacionTema::with("jurisdiccion", "tipo_programacion");
         $programacion = $programacion->join("tema", "tema.id", "=", "programacion_jurisdiccion.id_tema")
                                     ->where('id_tipo_programacion', $parametros['id_tipo']) 
+                                    ->where("anio", date("Y"))
                                      ->select("programacion_jurisdiccion.id",
                                               "tema.descripcion",
                                               "anio",
@@ -42,19 +45,19 @@ class ProgramacionTemaController extends Controller
                                               "noviembre",
                                               "diciembre",
                                               "total",
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=1) as enero_acumulado"),
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=2) as febrero_acumulado"),
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=3) as marzo_acumulado"),
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=4) as abril_acumulado"),
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=5) as mayo_acumulado"),
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=6) as junio_acumulado"),
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=7) as julio_acumulado"),
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=8) as agosto_acumulado"),
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=9) as septiembre_acumulado"),
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=10) as octubre_acumulado"),
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=11) as noviembre_acumulado"),
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=12) as diciembre_acumulado"),
-                                              DB::raw("(select count(*) from verificacion where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null) as total_acumulado"));
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=1) as enero_acumulado"),
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=2) as febrero_acumulado"),
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=3) as marzo_acumulado"),
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=4) as abril_acumulado"),
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=5) as mayo_acumulado"),
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=6) as junio_acumulado"),
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=7) as julio_acumulado"),
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=8) as agosto_acumulado"),
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=9) as septiembre_acumulado"),
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=10) as octubre_acumulado"),
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=11) as noviembre_acumulado"),
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=12) as diciembre_acumulado"),
+                                              DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null) as total_acumulado"));
 
         $usuario = Usuario::find($request->get('usuario_id'));
 
@@ -149,6 +152,11 @@ class ProgramacionTemaController extends Controller
             }
         }
           
+        if($usuario->su == 0)
+        {
+            if($usuario_admin)
+                return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);    
+        }
 
         if(!$permiso_accion && $usuario->su == 0)
         {
@@ -239,6 +247,12 @@ class ProgramacionTemaController extends Controller
             }
         }
 
+        if($usuario->su == 0)
+        {
+            if($usuario_admin)
+                return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);    
+        }
+
         if(!$permiso_accion && $usuario->su == 0)
         {
             return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
@@ -321,6 +335,12 @@ class ProgramacionTemaController extends Controller
                     if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
                     if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
                 }
+            }
+
+            if($usuario->su == 0)
+            {
+                if($usuario_admin)
+                    return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);    
             }
 
             if(!$permiso_accion && $usuario->su == 0)
