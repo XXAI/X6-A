@@ -65,6 +65,12 @@ class ReporteProyectoController extends Controller
                                     ->select(DB::RAW("count(*) as acumulado"))
                                     ->groupBy("id_tema")   
                                     ->first();
+
+                if(!$registro)
+                {
+                    $registro['acumulado'] = 0;
+                }
+
                 $registro['total'] = $value['total'];                    
                 $registro['id_tipo_programacion'] = $value['id_tipo_programacion'];                    
                 $registro['tema'] = $value->tema['descripcion'];                    
@@ -85,6 +91,14 @@ class ReporteProyectoController extends Controller
                                             DB::RAW("(select count(*) from muestra m where m.anio=muestra.anio and m.id_tema=muestra.id_tema and deleted_at is null and especificaciones=0) as fuera_especificaciones"))
                                     ->groupBy("id_tema")   
                                     ->first();
+                if(!$registro)
+                {
+                    $registro['acumulado'] = 0;
+                    $registro['dentro_especificaciones'] = 0;
+                    $registro['fuera_especificaciones'] = 0;
+                }
+                                  
+                
                 $registro['total'] = $value['total'];                    
                 $registro['id_tipo_programacion'] = $value['id_tipo_programacion']; 
                 $registro['tema'] = $value->tema['descripcion']; 
@@ -108,6 +122,11 @@ class ReporteProyectoController extends Controller
                                     ->select(DB::RAW("count(*) as acumulado"))
                                     ->groupBy("id_tema")   
                                     ->first();
+                if(!$registro)
+                {
+                    $registro['acumulado'] = 0;
+                }
+
                 $registro['total'] = $value['total'];                    
                 $registro['id_tipo_programacion'] = $value['id_tipo_programacion'];         
                 $registro['tema'] = $value->tema['descripcion'];       
@@ -126,6 +145,12 @@ class ReporteProyectoController extends Controller
                                     ->select(DB::RAW("count(*) as acumulado"))
                                     ->groupBy("id_tema")   
                                     ->first();
+
+                if(!$registro)
+                {
+                    $registro['acumulado'] = 0;
+                }
+
                 $registro['total'] = $value['total'];                    
                 $registro['id_tipo_programacion'] = $value['id_tipo_programacion'];   
                 $registro['tema'] = $value->tema['descripcion']; 
@@ -143,6 +168,11 @@ class ReporteProyectoController extends Controller
                                     ->select(DB::RAW("count(*) as acumulado"))
                                     ->groupBy("id_tema")   
                                     ->first();
+                if(!$registro)
+                {
+                    $registro['acumulado'] = 0;
+                }
+                
                 $registro['total'] = $value['total'];                    
                 $registro['id_tipo_programacion'] = $value['id_tipo_programacion'];               
                 $registro['tema'] = $value->tema['descripcion'];        
