@@ -380,6 +380,7 @@ class ProgramacionTemaController extends Controller
         $permisos = [];
         
         $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
+        
 
         foreach ($usuario_general->roles as $index => $rol) {
             foreach ($rol->permisos as $permiso) {
@@ -398,7 +399,7 @@ class ProgramacionTemaController extends Controller
         {
             $jurisdiccion = Jurisdiccion::all();
             $temas = Temas::LeftJoin("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
-            ->where("rel_usuario_tema.id_usuario", "=", $usuario->id)
+            ->where("rel_usuario_tema.usuario_id", "=", $usuario->id)
             ->get();
         }else if($usuario_capturista)
         {
@@ -409,9 +410,11 @@ class ProgramacionTemaController extends Controller
         {
             $jurisdiccion = Jurisdiccion::where('id',$usuario->id_jurisdiccion)->get();
             $temas = Temas::LeftJoin("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
-                    ->where("rel_usuario_tema.id_usuario", "=", $usuario->id)
+                    ->where("rel_usuario_tema.usuario_id", "=", $usuario->id)
                     ->get();
         }
+
+        
 
         $ambito = AmbitoRiesgo::all();
         $tipoProgramacion = TipoProgramacion::all();
