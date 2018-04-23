@@ -94,10 +94,6 @@ class ReporteProyectoController extends Controller
                 if(!$registro)
                 {
                     $registro['acumulado'] = 0;
-                }                    
-                if(!$registro)
-                {
-                    $registro['acumulado'] = 0;
                     $registro['dentro_especificaciones'] = 0;
                     $registro['fuera_especificaciones'] = 0;
                 }
