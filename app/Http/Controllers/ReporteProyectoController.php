@@ -8,7 +8,7 @@ use Illuminate\Http\Response as HttpResponse;
 use JWTAuth;
 
 use App\Http\Requests;
-use App\Models\ProgramacionTema, App\Models\Usuario, App\Models\Muestra, App\Models\Verificacion, App\Models\Capacitacion;
+use App\Models\ProgramacionTema, App\Models\Usuario, App\Models\Muestra, App\Models\Verificacion, App\Models\Capacitacion, App\Models\Determinacion;
 use App\Models\Dictamen, App\Models\Reaccion, App\Models\DictamenArchivo, App\Models\TipoSeguimiento, App\Models\Temas;
 
 use Illuminate\Support\Facades\Input;
@@ -91,6 +91,10 @@ class ReporteProyectoController extends Controller
                                             DB::RAW("(select count(*) from muestra m where m.anio=muestra.anio and m.id_tema=muestra.id_tema and deleted_at is null and especificaciones=0) as fuera_especificaciones"))
                                     ->groupBy("id_tema")   
                                     ->first();
+                if(!$registro)
+                {
+                    $registro['acumulado'] = 0;
+                }                    
                 if(!$registro)
                 {
                     $registro['acumulado'] = 0;
@@ -182,8 +186,41 @@ class ReporteProyectoController extends Controller
                 $tabla[0]['reaccion']['total'] = $value['total'];
                 $tabla[0]['reaccion']['acumulado'] = $registro['acumulado'];
             }
+            if($value['id_tipo_programacion'] == 6 )
+            {
+                $registro = Determinacion::where("anio", date("Y"))
+                                    ->where("id_tema", $parametros['tema'])
+                                    ->whereNull("deleted_at") 
+                                    ->select(DB::RAW("count(*) as acumulado"),
+                                            DB::RAW("(select count(*) from determinacion m where m.anio=determinacion.anio and m.id_tema=determinacion.id_tema and deleted_at is null and especificaciones=1) as dentro_especificaciones"),
+                                            DB::RAW("(select count(*) from determinacion m where m.anio=determinacion.anio and m.id_tema=determinacion.id_tema and deleted_at is null and especificaciones=0) as fuera_especificaciones"))
+                                    ->groupBy("id_tema")   
+                                    ->first();
+                if(!$registro)
+                {
+                    $registro['acumulado'] = 0;
+                    $registro['dentro_especificaciones'] = 0;
+                    $registro['fuera_especificaciones'] = 0;
+                }
+                                  
+                
+                $registro['total'] = $value['total'];                    
+                $registro['id_tipo_programacion'] = $value['id_tipo_programacion']; 
+                $registro['tema'] = $value->tema['descripcion']; 
+                $registro['tipo'] = "Determinacion";                                      
+                $respuesta[] = $registro;    
+                
+                $tabla[0]['determinacion']['total'] = $value['total'];
+                $tabla[0]['determinacion']['acumulado'] = $registro['acumulado'];
+                
+                $tabla[0]['determinacion_acumulado']['dentro'] = $registro['dentro_especificaciones'];
+                $tabla[0]['determinacion_acumulado']['fuera'] = $registro['fuera_especificaciones'];
+
+                $arreglo_detalles[0]['determinacion_detalles'] = $registro['dentro_especificaciones'];
+                
+            }
         }    
-                     
+          
         return Response::json([ 'data' => array('datos'=>$respuesta, 'table'=>$tabla, 'detalles'=>$arreglo_detalles)],200);                  
     }
 
@@ -203,6 +240,10 @@ class ReporteProyectoController extends Controller
         $table[0]['reaccion']['acumulado'] = 0;
         $table[0]['verificaciones']['total'] = 0;
         $table[0]['verificaciones']['acumulado'] = 0;
+        $table[0]['determinacion']['total'] = 0;
+        $table[0]['determinacion']['acumulado'] = 0;
+        $table[0]['determinacion_acumulado']['dentro'] = 0;
+        $table[0]['determinacion_acumulado']['fuera'] = 0;
         return $table;
     }
 }

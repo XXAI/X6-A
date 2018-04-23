@@ -37,6 +37,7 @@ Route::group(['middleware' => 'jwt'], function () {
     Route::resource('modulo-dictamen', 'DictamenController',    ['only' => ['index', 'show', 'store','update','destroy']]);
     Route::resource('modulo-verificacion', 'VerificacionController',    ['only' => ['index', 'show', 'store','update','destroy']]);
     Route::resource('modulo-reaccion', 'ReaccionController',    ['only' => ['index', 'show', 'store','update','destroy']]);
+    Route::resource('modulo-determinacion', 'DeterminacionController',    ['only' => ['index', 'show', 'store','update','destroy']]);
 
     Route::resource('registro-verificacion', 'RegistrosVerificacionController',    ['only' => ['index', 'show', 'store','update','destroy']]);
     Route::post('registro-verificacion/{id}', 'RegistrosVerificacionController@update');
@@ -45,6 +46,11 @@ Route::group(['middleware' => 'jwt'], function () {
     Route::resource('registro-muestra', 'RegistrosMuestraController',    ['only' => ['index', 'show', 'store','update','destroy']]);
     Route::post('registro-muestra/{id}', 'RegistrosMuestraController@update');
     Route::get('descargar-muestra/{id}', 'RegistrosMuestraController@descargar');
+
+    Route::resource('registro-determinacion', 'RegistrosDeterminacionController',    ['only' => ['index', 'show', 'store','update','destroy']]);
+    Route::post('registro-determinacion/{id}', 'RegistrosDeterminacionController@update');
+    Route::get('descargar-determinacion/{id}', 'RegistrosDeterminacionController@descargar');
+
 
     Route::resource('registro-capacitacion', 'RegistrosCapacitacionController',    ['only' => ['index', 'show', 'store','update','destroy']]);
     Route::post('registro-capacitacion/{id}', 'RegistrosCapacitacionController@update');

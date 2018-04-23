@@ -46,6 +46,13 @@ class tipoProgramacionSeeder extends Seeder
                 'tiempo_captura' => 1,
                 'created_at' => new DateTime,
                 'updated_at' => new DateTime,
+            ],
+            [
+                'id' => 5,
+                'descripcion' => 'DETERMINACION',
+                'tiempo_captura' => 1,
+                'created_at' => new DateTime,
+                'updated_at' => new DateTime,
             ]
         ]);
     }
