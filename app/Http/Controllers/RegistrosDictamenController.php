@@ -106,6 +106,10 @@ class RegistrosDictamenController extends Controller
             $parametros['nombre'] = $_FILES['file']['name'];
             
             $parametros['extension'] = $extension[1];
+
+            if($parametros['extension']!='pdf')
+                return Response::json(['error' => "Solamente se permite ingresar archivos PDF"], HttpResponse::HTTP_NOT_FOUND);
+            
             $parametros['peso'] = $_FILES['file']['size'];
             
             if($_FILES['file']['size'] == 0)
@@ -200,6 +204,10 @@ class RegistrosDictamenController extends Controller
                 $extension = explode(".", strtolower($_FILES['file']['name']));
                 $parametros['nombre'] = $extension[0];
                 $parametros['extension'] = $extension[1];
+
+                if($parametros['extension']!='pdf')
+                    return Response::json(['error' => "Solamente se permite ingresar archivos PDF"], HttpResponse::HTTP_NOT_FOUND);
+            
                 $parametros['peso'] = $_FILES['file']['size'];
                 $parametros['archivo'] = $extension[0].".".$extension[1];
                 
