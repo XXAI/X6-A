@@ -400,6 +400,10 @@ class ProgramacionTemaController extends Controller
             $jurisdiccion = Jurisdiccion::all();
             $temas = Temas::LeftJoin("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
             ->where("rel_usuario_tema.usuario_id", "=", $usuario->id)
+            ->whereNull("tema.deleted_at")
+            ->select("tema.id as id",
+                    "tema.id_ambito_riesgo as id_ambito_riesgo",
+                    "tema.descripcion as descripcion")
             ->get();
         }else if($usuario_capturista)
         {
@@ -411,6 +415,10 @@ class ProgramacionTemaController extends Controller
             $jurisdiccion = Jurisdiccion::where('id',$usuario->id_jurisdiccion)->get();
             $temas = Temas::LeftJoin("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
                     ->where("rel_usuario_tema.usuario_id", "=", $usuario->id)
+                    ->whereNull("tema.deleted_at")
+                    ->select("tema.id as id",
+                    "tema.id_ambito_riesgo as id_ambito_riesgo",
+                    "tema.descripcion as descripcion")
                     ->get();
         }
 
