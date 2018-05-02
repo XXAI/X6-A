@@ -9,7 +9,7 @@ use JWTAuth;
 
 use App\Http\Requests;
 use App\Models\ProgramacionTema, App\Models\Jurisdiccion, App\Models\Temas, App\Models\TipoProgramacion;
-use App\Models\ProgramacionHistorial, App\Models\Verificacion, App\Models\AmbitoRiesgo, App\Models\Ejecutivo, App\Models\Usuario;
+use App\Models\ProgramacionHistorial, App\Models\Verificacion, App\Models\AmbitoRiesgo, App\Models\Ejecutivo, App\Models\Usuario, App\Models\RelUsuarioTema;
 
 use Illuminate\Support\Facades\Input;
 use \Validator,\Hash, \Response, DB;
@@ -30,7 +30,7 @@ class ProgramacionTemaController extends Controller
                                               "tema.descripcion",
                                               "anio",
                                               "id_jurisdiccion",
-                                              "id_tema",
+                                              "programacion_jurisdiccion.id_tema",
                                               "id_tipo_programacion",
                                               "enero",
                                               "febrero",
@@ -76,10 +76,35 @@ class ProgramacionTemaController extends Controller
             }
         }
 
-        if(!$usuario_jurisdiccional && ($usuario->su == 0 || $usuario_limitado))
+        if($usuario_jurisdiccional && $usuario_limitado)
         {
-            $programacion = $programacion->where("id_jurisdiccion", $usuario->id_jurisdiccion);
+            /*$rel_usuario = RelUsuarioTema::where("usuario_id", $usuario->id);
+            if($rel_usuario->count() > 0)
+            {*/
+                $programacion = $programacion->join("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
+                            ->where("rel_usuario_tema.usuario_id", "=", $usuario->id);
+            //}
+        }else if($usuario_jurisdiccional && !$usuario_limitado)
+        {
+            $rel_usuario = RelUsuarioTema::where("usuario_id", $usuario->id);
+            if($rel_usuario->count() > 0)
+            {
+                $programacion = $programacion->join("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
+                            ->where("rel_usuario_tema.usuario_id", "=", $usuario->id);
+            }
+        }else if(!$usuario_jurisdiccional && $usuario_limitado)
+        {
+            $programacion = $programacion->where("id_jurisdiccion", $usuario->id_jurisdiccion)
+                            ->join("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
+                            ->where("rel_usuario_tema.usuario_id", "=", $usuario->id);
         }
+        /*if(!$usuario_jurisdiccional && ($usuario->su == 0 || $usuario_limitado))
+        {
+            $programacion = $programacion->where("id_jurisdiccion", $usuario->id_jurisdiccion)
+                            ->join("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
+                            ->where("rel_usuario_tema.usuario_id", "=", $usuario->id);
+
+        }*/
 
         if ($parametros['q']) {
             $programacion =  $programacion->where(function($query) use ($parametros) {
