@@ -41,6 +41,12 @@ class RegistrosVerificacionController extends Controller
         if($usuario_capturista)
         {
             $verificacion = $verificacion->where("id_jurisdiccion", $usuario->id_jurisdiccion); 
+        }else if($usuario_jurisdiccional && $usuario_limitado)
+        {
+            $verificacion = $verificacion->join("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "verificacion.id")
+                                          ->where("rel_usuario_tema.usuario_id", "=", $usuario->id);
+        }else if($usuario_jurisdiccional && !$usuario_limitado)
+        {
         }
 
 

@@ -23,6 +23,7 @@ class ProgramacionTemaController extends Controller
         $tipo_programacion = TipoProgramacion::find($parametros['id_tipo']);
 
         $programacion = ProgramacionTema::with("jurisdiccion", "tipo_programacion");
+       
         $programacion = $programacion->join("tema", "tema.id", "=", "programacion_jurisdiccion.id_tema")
                                     ->where('id_tipo_programacion', $parametros['id_tipo']) 
                                     ->where("anio", date("Y"))
@@ -59,68 +60,43 @@ class ProgramacionTemaController extends Controller
                                               DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=12) as diciembre_acumulado"),
                                               DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null) as total_acumulado"));
 
-        $usuario = Usuario::find($request->get('usuario_id'));
+        
 
-        $usuario_admin = false;
-        $usuario_limitado = false;
-        $usuario_jurisdiccional = false;
+        $usuario = Usuario::find($request->get('usuario_id'));
+        $usuario_jurisdiccion = false;
+        $usuario_tema = false;
+        $usuario_tema_limitado = false;
         $permisos = [];
         
         $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
 
         foreach ($usuario_general->roles as $index => $rol) {
             foreach ($rol->permisos as $permiso) {
-                if($permiso->id == 'T2i7dkAEI3I3Rp9rKipW0RHf5SYXNLqz'){ $usuario_limitado = true; }
-                if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
-                if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
+                if($permiso->id == 'glDZ91p5ZU3LNpetwXFzLQNRjbNCpSkQ'){ $usuario_jurisdiccion = true; }
+                if($permiso->id == 'JNCmYg12f9Ja0inVDoOY8v7r20pVBEBD'){ $usuario_tema = true; }
+                if($permiso->id == 'DXbuTDSJBL2L4EX5dfAvw0dyCcMqnQAU'){ $usuario_tema_limitado = true; }
+                
             }
         }
+        
+        if($usuario->su == 0)
+        {
+            if(!$usuario_jurisdiccion)
+                $programacion = $programacion->where('id_jurisdiccion',$usuario->id_jurisdiccion);
 
-        if($usuario_jurisdiccional && $usuario_limitado)
-        {
-            /*$rel_usuario = RelUsuarioTema::where("usuario_id", $usuario->id);
-            if($rel_usuario->count() > 0)
-            {*/
-                $programacion = $programacion->join("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
-                            ->where("rel_usuario_tema.usuario_id", "=", $usuario->id);
-            //}
-        }else if($usuario_jurisdiccional && !$usuario_limitado)
-        {
-            $rel_usuario = RelUsuarioTema::where("usuario_id", $usuario->id);
-            if($rel_usuario->count() > 0)
+            if($usuario_tema_limitado)  
             {
                 $programacion = $programacion->join("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
-                            ->where("rel_usuario_tema.usuario_id", "=", $usuario->id);
+                                ->where("rel_usuario_tema.usuario_id", "=", $usuario->id);
             }
-        }else if(!$usuario_jurisdiccional && $usuario_limitado)
-        {
-            $programacion = $programacion->where("id_jurisdiccion", $usuario->id_jurisdiccion)
-                            ->join("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
-                            ->where("rel_usuario_tema.usuario_id", "=", $usuario->id);
         }
-        /*if(!$usuario_jurisdiccional && ($usuario->su == 0 || $usuario_limitado))
-        {
-            $programacion = $programacion->where("id_jurisdiccion", $usuario->id_jurisdiccion)
-                            ->join("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
-                            ->where("rel_usuario_tema.usuario_id", "=", $usuario->id);
-
-        }*/
 
         if ($parametros['q']) {
             $programacion =  $programacion->where(function($query) use ($parametros) {
                  $query->where('tema.descripcion','LIKE',"%".$parametros['q']."%");
              });
         }
-        
-        
-        /*if ($parametros['jurisdiccion']) {
-            $programacion =  $programacion->where('id_jurisdiccion', $parametros['jurisdiccion']);
-        }*/
-
-        /*if ($parametros['tipo']) {
-            $programacion =  $programacion->where('id_tipo_programacion', $parametros['tipo_programacion']);
-        }*/
-
+      
         if(isset($parametros['page'])){
             $resultadosPorPagina = isset($parametros["per_page"])? $parametros["per_page"] : 25;
             $programacion = $programacion->paginate($resultadosPorPagina);
@@ -161,9 +137,9 @@ class ProgramacionTemaController extends Controller
         $usuario = Usuario::find($request->get('usuario_id'));
         
         $permiso_accion = false;
-        $usuario_admin = false;
-        $usuario_limitado = false;
-        $usuario_jurisdiccional = false;
+        $usuario_tema = false;
+        $usuario_tema_limitado = false;
+        $usuario_jurisdiccion = false;
         $permisos = [];
       
         $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
@@ -171,34 +147,28 @@ class ProgramacionTemaController extends Controller
         foreach ($usuario_general->roles as $index => $rol) {
             foreach ($rol->permisos as $permiso) {
                 if($permiso->id == 'WHVUYw3XbelvvBxxa4acbVO2lswKHzx0'){ $permiso_accion = true; }
-                if($permiso->id == 'T2i7dkAEI3I3Rp9rKipW0RHf5SYXNLqz'){ $usuario_limitado = true; }
-                if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
-                if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
+                if($permiso->id == 'glDZ91p5ZU3LNpetwXFzLQNRjbNCpSkQ'){ $usuario_jurisdiccion = true; }
+                if($permiso->id == 'JNCmYg12f9Ja0inVDoOY8v7r20pVBEBD'){ $usuario_tema = true; }
+                if($permiso->id == 'DXbuTDSJBL2L4EX5dfAvw0dyCcMqnQAU'){ $usuario_tema_limitado = true; }
             }
         }
-          
+
         if($usuario->su == 0)
         {
-            if($usuario_admin)
-                return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);    
+            if(!$permiso_accion)
+                return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
         }
-
-        if(!$permiso_accion && $usuario->su == 0)
-        {
-            return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
-        }
-
+          
         $programacion_busqueda = ProgramacionTema::where("id_tipo_programacion", $inputs['id_tipo_programacion'])
                                                     ->where("id_tema", $inputs['id_tema'])
                                                     ->where("anio", date("Y"));
 
-        if($usuario->su == 1 || $usuario_admin || $usuario_jurisdiccional)           
+        if($usuario->su == 1 || $usuario_jurisdiccion)           
         {
             $programacion_busqueda = $programacion_busqueda->where("id_jurisdiccion", $inputs['id_jurisdiccion']);
-        }else if($usuario_limitado){
+        }else if(!$usuario_jurisdiccion){
             $programacion_busqueda = $programacion_busqueda->where("id_jurisdiccion", $usuario->id_jurisdiccion);
-        }else
-            $programacion_busqueda = $programacion_busqueda->where("id_jurisdiccion", $usuario->id_jurisdiccion);
+        }
 
         if($programacion_busqueda->count() > 0)
         {
@@ -254,33 +224,27 @@ class ProgramacionTemaController extends Controller
         $inputs = Input::all();
 
         $usuario = Usuario::find($request->get('usuario_id'));
-        
         $permiso_accion = false;
-        $usuario_admin = false;
-        $usuario_limitado = false;
-        $usuario_jurisdiccional = false;
+        $usuario_tema = false;
+        $usuario_tema_limitado = false;
+        $usuario_jurisdiccion = false;
         $permisos = [];
-       
+      
         $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
 
         foreach ($usuario_general->roles as $index => $rol) {
             foreach ($rol->permisos as $permiso) {
                 if($permiso->id == 't4GTuFtRkWl5DGVpyLhDqoAfV4Y5aP1V'){ $permiso_accion = true; }
-                if($permiso->id == 'T2i7dkAEI3I3Rp9rKipW0RHf5SYXNLqz'){ $usuario_limitado = true; }
-                if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
-                if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
+                if($permiso->id == 'glDZ91p5ZU3LNpetwXFzLQNRjbNCpSkQ'){ $usuario_jurisdiccion = true; }
+                if($permiso->id == 'JNCmYg12f9Ja0inVDoOY8v7r20pVBEBD'){ $usuario_tema = true; }
+                if($permiso->id == 'DXbuTDSJBL2L4EX5dfAvw0dyCcMqnQAU'){ $usuario_tema_limitado = true; }
             }
         }
 
         if($usuario->su == 0)
         {
-            if($usuario_admin)
-                return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);    
-        }
-
-        if(!$permiso_accion && $usuario->su == 0)
-        {
-            return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
+            if(!$permiso_accion)
+                return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
         }
                                                   
         $v = Validator::make($inputs, $reglas, $mensajes);
@@ -292,15 +256,6 @@ class ProgramacionTemaController extends Controller
         try {
 
             $programacion_busqueda = ProgramacionTema::find($id);
-
-            /*if($usuario->su == 1 || $usuario_admin || $usuario_jurisdiccional)           
-            {
-                $programacion_busqueda = $programacion_busqueda->where("id_jurisdiccion", $inputs['id_jurisdiccion']);
-            }else if($usuario_limitado){
-                
-                $programacion_busqueda = $programacion_busqueda->where("id_jurisdiccion", $usuario->id_jurisdiccion);
-            }else
-                $programacion_busqueda = $programacion_busqueda->where("id_jurisdiccion", $usuario->id_jurisdiccion);*/
 
             $arreglo_historial['id_jurisdiccion'] = $programacion_busqueda['id_jurisdiccion'];
             $arreglo_historial['id_tipo_programacion'] = $programacion_busqueda['id_tipo_programacion'];
@@ -344,35 +299,28 @@ class ProgramacionTemaController extends Controller
         	
             $programacion = ProgramacionTema::find($id);
             $usuario = Usuario::find($request->get('usuario_id'));
-        
             $permiso_accion = false;
-            $usuario_admin = false;
-            $usuario_limitado = false;
-            $usuario_jurisdiccional = false;
+            $usuario_tema = false;
+            $usuario_tema_limitado = false;
+            $usuario_jurisdiccion = false;
             $permisos = [];
-            
+        
             $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
 
             foreach ($usuario_general->roles as $index => $rol) {
                 foreach ($rol->permisos as $permiso) {
                     if($permiso->id == 'OgH6xYd6pCixYAeT8nJjBcM4BcCQvvvT'){ $permiso_accion = true; }
-                    if($permiso->id == 'T2i7dkAEI3I3Rp9rKipW0RHf5SYXNLqz'){ $usuario_limitado = true; }
-                    if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
-                    if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
+                    if($permiso->id == 'glDZ91p5ZU3LNpetwXFzLQNRjbNCpSkQ'){ $usuario_jurisdiccion = true; }
+                    if($permiso->id == 'JNCmYg12f9Ja0inVDoOY8v7r20pVBEBD'){ $usuario_tema = true; }
+                    if($permiso->id == 'DXbuTDSJBL2L4EX5dfAvw0dyCcMqnQAU'){ $usuario_tema_limitado = true; }
                 }
             }
 
             if($usuario->su == 0)
             {
-                if($usuario_admin)
-                    return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);    
+                if(!$permiso_accion)
+                    return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
             }
-
-            if(!$permiso_accion && $usuario->su == 0)
-            {
-                return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
-            }
-            
             if($programacion)
             {
                 if($usuario->su == 0)           
@@ -398,10 +346,12 @@ class ProgramacionTemaController extends Controller
         
         $usuario = Usuario::find($request->get('usuario_id'));
         
-        $usuario_admin = false;
-        $usuario_limitado = false;
-        $usuario_jurisdiccional = false;
-        $usuario_capturista = false;
+        $usuario_jurisdiccion = false;
+        $usuario_tema = false;
+        $usuario_tema_limitado = false;
+        
+        $jurisdiccion = [];
+        $temas = Temas::all(); 
         $permisos = [];
         
         $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
@@ -409,46 +359,35 @@ class ProgramacionTemaController extends Controller
 
         foreach ($usuario_general->roles as $index => $rol) {
             foreach ($rol->permisos as $permiso) {
-                if($permiso->id == 'T2i7dkAEI3I3Rp9rKipW0RHf5SYXNLqz'){ $usuario_limitado = true; }
-                if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
-                if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
-                if($permiso->id == 'nmscPx2QPjOcF26qIHI1KS8XTuftlPCn'){ $usuario_capturista = true; }
+                if($permiso->id == 'glDZ91p5ZU3LNpetwXFzLQNRjbNCpSkQ'){ $usuario_jurisdiccion = true; }
+                if($permiso->id == 'JNCmYg12f9Ja0inVDoOY8v7r20pVBEBD'){ $usuario_tema = true; }
+                if($permiso->id == 'DXbuTDSJBL2L4EX5dfAvw0dyCcMqnQAU'){ $usuario_tema_limitado = true; }
             }
         }
-
-        if($usuario->su == 1 || $usuario_admin)
+        
+        if($usuario->su == 1 || ($usuario_jurisdiccion && $usuario_tema))
         {
             $jurisdiccion = Jurisdiccion::all();
             $temas = Temas::all();
-        }else if($usuario_jurisdiccional)
-        {
+        }
+        
+        
+        if($usuario_jurisdiccion)
             $jurisdiccion = Jurisdiccion::all();
-            $temas = Temas::LeftJoin("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
+        else
+            $jurisdiccion = Jurisdiccion::where('id',$usuario->id_jurisdiccion)->get();
+
+        if($usuario_tema_limitado)  
+        {
+            $temas = Temas::join("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
             ->where("rel_usuario_tema.usuario_id", "=", $usuario->id)
             ->whereNull("tema.deleted_at")
             ->select("tema.id as id",
                     "tema.id_ambito_riesgo as id_ambito_riesgo",
                     "tema.descripcion as descripcion")
             ->get();
-        }else if($usuario_capturista)
-        {
-            $jurisdiccion = Jurisdiccion::where('id',$usuario->id_jurisdiccion)->get();
-            $temas = Temas::all();
         }
-        else if($usuario->su == 0 || !$usuario_limitado)
-        {
-            $jurisdiccion = Jurisdiccion::where('id',$usuario->id_jurisdiccion)->get();
-            $temas = Temas::LeftJoin("rel_usuario_tema", "rel_usuario_tema.id_tema", "=", "tema.id")
-                    ->where("rel_usuario_tema.usuario_id", "=", $usuario->id)
-                    ->whereNull("tema.deleted_at")
-                    ->select("tema.id as id",
-                    "tema.id_ambito_riesgo as id_ambito_riesgo",
-                    "tema.descripcion as descripcion")
-                    ->get();
-        }
-
         
-
         $ambito = AmbitoRiesgo::all();
         $tipoProgramacion = TipoProgramacion::all();
         $ejecutivo = Ejecutivo::all();

@@ -58,9 +58,9 @@ class DictamenController extends Controller
         
         $usuario = Usuario::find($request->get('usuario_id'));
 
-        $usuario_admin = false;
-        $usuario_limitado = false;
-        $usuario_jurisdiccional = false;
+        $usuario_jurisdiccion = false;
+        $usuario_tema = false;
+        $usuario_tema_limitado = false;
         $usuario_capturista = false;
         $permisos = [];
         
@@ -68,16 +68,18 @@ class DictamenController extends Controller
 
         foreach ($usuario_general->roles as $index => $rol) {
             foreach ($rol->permisos as $permiso) {
-                if($permiso->id == 'T2i7dkAEI3I3Rp9rKipW0RHf5SYXNLqz'){ $usuario_limitado = true; }
-                if($permiso->id == 'r90ysk5oy4HesbFy3bSFkjtsspVzMbAo'){ $usuario_admin = true; }
-                if($permiso->id == 'csQuKy1YuGtrUnZQ5pSO2z5svinMqvZB'){ $usuario_jurisdiccional = true; }
-                if($permiso->id == 'nmscPx2QPjOcF26qIHI1KS8XTuftlPCn'){ $usuario_capturista = true; }
+                if($permiso->id == 'glDZ91p5ZU3LNpetwXFzLQNRjbNCpSkQ'){ $usuario_jurisdiccion = true; }
+                if($permiso->id == 'JNCmYg12f9Ja0inVDoOY8v7r20pVBEBD'){ $usuario_tema = true; }
+                if($permiso->id == 'DXbuTDSJBL2L4EX5dfAvw0dyCcMqnQAU'){ $usuario_tema_limitado = true; }
+                if($permiso->id == 'OHDYRToKLymGxFKepWuZ6WzdCXfCt9pF'){ $usuario_capturista = true; }
+                
             }
         }
 
-        if($usuario_capturista || ($usuario_admin && $usuario->su == 0))
+        if($usuario->su == 0)
         {
-            $verificacion = $verificacion->where('id_jurisdiccion',$usuario->id_jurisdiccion);
+            if(!$usuario_jurisdiccion && $usuario_capturista)
+                $verificacion = $verificacion->where('id_jurisdiccion',$usuario->id_jurisdiccion);
         }
         
         if ($parametros['q']) {
