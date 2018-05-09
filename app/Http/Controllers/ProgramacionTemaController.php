@@ -46,6 +46,9 @@ class ProgramacionTemaController extends Controller
                                               "noviembre",
                                               "diciembre",
                                               "total",
+                                              "validado",
+                                              "autorizado_al",
+                                              DB::raw("(select concat(nombre,' ',apellidos) from usuarios where id=autorizado_por) as autorizado_por"),
                                               DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=1) as enero_acumulado"),
                                               DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=2) as febrero_acumulado"),
                                               DB::raw("(select count(*) from ".strtolower($tipo_programacion->descripcion)." where anio=programacion_jurisdiccion.anio and  id_tema=programacion_jurisdiccion.id_tema and  id_jurisdiccion=programacion_jurisdiccion.id_jurisdiccion and  deleted_at is null and mes=3) as marzo_acumulado"),
@@ -223,6 +226,12 @@ class ProgramacionTemaController extends Controller
 
         $inputs = Input::all();
 
+        $programacion_busqueda = ProgramacionTema::find($id);
+        if($programacion_busqueda->validado == 1)
+        {
+            return Response::json(['error' => "No se puede modificar una programación validada."], 500);
+        }
+
         $usuario = Usuario::find($request->get('usuario_id'));
         $permiso_accion = false;
         $usuario_tema = false;
@@ -255,7 +264,7 @@ class ProgramacionTemaController extends Controller
         DB::beginTransaction();
         try {
 
-            $programacion_busqueda = ProgramacionTema::find($id);
+            
 
             $arreglo_historial['id_jurisdiccion'] = $programacion_busqueda['id_jurisdiccion'];
             $arreglo_historial['id_tipo_programacion'] = $programacion_busqueda['id_tipo_programacion'];
@@ -298,6 +307,11 @@ class ProgramacionTemaController extends Controller
         try {
         	
             $programacion = ProgramacionTema::find($id);
+
+            if($programacion->validado == 1)
+            {
+                return Response::json(['error' => "No se puede eliminar una programación validada."], 500);
+            }
             $usuario = Usuario::find($request->get('usuario_id'));
             $permiso_accion = false;
             $usuario_tema = false;
@@ -339,6 +353,82 @@ class ProgramacionTemaController extends Controller
 
     }
 
+    public function validar(Request $request)
+    {
+        try {
+            $inputs = Input::all();
+            $programacion = ProgramacionTema::find($inputs['id']);
+            $usuario = Usuario::find($request->get('usuario_id'));
+            $permiso_accion = false;
+            $permisos = [];
+        
+            $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
+
+            foreach ($usuario_general->roles as $index => $rol) {
+                foreach ($rol->permisos as $permiso) {
+                    if($permiso->id == 'KYhNis0agi18249HwyCeVrRUFopQZLmd'){ $permiso_accion = true; }
+                }
+            }
+
+            if($usuario->su == 0)
+            {
+                if(!$permiso_accion)
+                    return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
+            }
+            if($programacion)
+            {
+                $programacion->validado = 1;
+                $programacion->autorizado_al = date("Y-m-d H:i:s");
+                $programacion->autorizado_por =$request->get('usuario_id');
+                $programacion->update();
+                return Response::json(['data'=>$programacion],200);
+            }else
+            {
+                return Response::json(['error'=>"No tiene privilegios para eliminar este usuario"],500);
+            }
+        }catch (Exception $e) {
+           return Response::json(['error' => $e->getMessage()], HttpResponse::HTTP_CONFLICT);
+        }
+    }
+
+    public function elimina_validacion(Request $request)
+    {
+        try {
+            $inputs = Input::all();
+            $programacion = ProgramacionTema::find($inputs['id']);
+            $usuario = Usuario::find($request->get('usuario_id'));
+            $permiso_accion = false;
+            $permisos = [];
+        
+            $usuario_general = Usuario::with('roles.permisos')->find($request->get('usuario_id'));
+
+            foreach ($usuario_general->roles as $index => $rol) {
+                foreach ($rol->permisos as $permiso) {
+                    if($permiso->id == 'KYhNis0agi18249HwyCeVrRUFopQZLmd'){ $permiso_accion = true; }
+                }
+            }
+
+            if($usuario->su == 0)
+            {
+                if(!$permiso_accion)
+                    return Response::json(['error' => "No tiene permiso para realizar estar acción."], 500);
+            }
+            if($programacion)
+            {
+                $programacion->validado = 0;
+                $programacion->autorizado_al = date("Y-m-d H:i:s");
+                $programacion->autorizado_por =$request->get('usuario_id');
+                $programacion->update();
+                return Response::json(['data'=>$programacion],200);
+            }else
+            {
+                return Response::json(['error'=>"No tiene privilegios para eliminar este usuario"],500);
+            }
+        }catch (Exception $e) {
+           return Response::json(['error' => $e->getMessage()], HttpResponse::HTTP_CONFLICT);
+        }
+    }
+
     public function catalogos(Request $request)
     {
         $catalogos = Array();
@@ -369,10 +459,7 @@ class ProgramacionTemaController extends Controller
         {
             $jurisdiccion = Jurisdiccion::all();
             $temas = Temas::all();
-        }
-        
-        
-        if($usuario_jurisdiccion)
+        }else if($usuario_jurisdiccion)
             $jurisdiccion = Jurisdiccion::all();
         else
             $jurisdiccion = Jurisdiccion::where('id',$usuario->id_jurisdiccion)->get();

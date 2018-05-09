@@ -22,6 +22,7 @@ class CapacitacionController extends Controller
         $verificacion = ProgramacionTema::with("jurisdiccion", "tipo_programacion");
         $verificacion = $verificacion->join("tema", "tema.id", "=", "programacion_jurisdiccion.id_tema")
                                     ->where('id_tipo_programacion', 3) 
+                                    ->where('programacion_jurisdiccion.validado', 1) 
                                      ->select("programacion_jurisdiccion.id",
                                               "tema.descripcion",
                                               "anio",

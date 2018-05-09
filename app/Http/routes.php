@@ -67,12 +67,16 @@ Route::group(['middleware' => 'jwt'], function () {
     Route::get('descargar-dictamen/{id}',           'RegistrosDictamenController@descargar');
     Route::get('ver-archivo/{id}',                  'RegistrosDictamenController@ver');
 
+    
+
     Route::resource('reporte-proyecto',             'ReporteProyectoController',    ['only' => ['index']]);
     Route::resource('reporte-ambito-riesgo',         'ReporteAmbitoRiesgoController',    ['only' => ['index']]);
     Route::resource('reporte-ejecutivo',             'ReporteEjecutivoController',    ['only' => ['index']]);
     Route::resource('reporte-jurisdiccional',        'ReporteJurisdiccionalController',    ['only' => ['index']]);
 
     Route::get('catalogos-programacion', 'ProgramacionTemaController@catalogos');
+    Route::post('validar-programacion',         'ProgramacionTemaController@validar');
+    Route::post('elimina-validacion',         'ProgramacionTemaController@elimina_validacion');
 
     Route::resource('tema', 'TemaController',    ['only' => ['index', 'show', 'store','update','destroy']]);
         
