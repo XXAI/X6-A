@@ -23,6 +23,7 @@ Route::get('check-token',       'AutenticacionController@verificar');
 
 Route::group(['middleware' => 'jwt'], function () {
     Route::resource('usuarios', 'UsuarioController',    ['only' => ['index', 'show', 'store','update','destroy']]);
+    Route::put('editar-perfil/{id}',                    'EditarPerfilController@editar');
     Route::resource('roles', 'RolController',           ['only' => ['index', 'show', 'store','update','destroy']]);
     Route::resource('permisos', 'PermisoController',    ['only' => ['index', 'show', 'store','update','destroy']]);
     
