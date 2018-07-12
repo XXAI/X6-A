@@ -68,8 +68,6 @@ Route::group(['middleware' => 'jwt'], function () {
     Route::get('descargar-dictamen/{id}',           'RegistrosDictamenController@descargar');
     Route::get('ver-archivo/{id}',                  'RegistrosDictamenController@ver');
 
-    
-
     Route::resource('reporte-proyecto',             'ReporteProyectoController',    ['only' => ['index']]);
     Route::resource('reporte-ambito-riesgo',         'ReporteAmbitoRiesgoController',    ['only' => ['index']]);
     Route::resource('reporte-ejecutivo',             'ReporteEjecutivoController',    ['only' => ['index']]);
@@ -78,6 +76,16 @@ Route::group(['middleware' => 'jwt'], function () {
     Route::get('catalogos-programacion', 'ProgramacionTemaController@catalogos');
     Route::post('validar-programacion',         'ProgramacionTemaController@validar');
     Route::post('elimina-validacion',         'ProgramacionTemaController@elimina_validacion');
+
+    Route::resource('registro_verificacion',        'VerificacionSanitariaController',      ['only' => ['index', 'show', 'store','update','destroy']]);
+    Route::resource('registro_dictamen',            'DictamenTecnicoController',            ['only' => ['index', 'show', 'store','update','destroy']]);
+    Route::resource('registro_resolucion',          'ResolucionAdministrativaController',   ['only' => ['index', 'show', 'store','update','destroy']]);
+    Route::resource('registro_notificacion',        'NotificacionController',               ['only' => ['index', 'show', 'store','update','destroy']]);
+    Route::resource('registro_licencia',            'LicenciaSatinariaController',          ['only' => ['index', 'show', 'store','update','destroy']]);
+    Route::resource('registro_aviso',               'AvisosController',                 ['only' => ['index', 'show', 'store','update','destroy']]);
+    Route::resource('registro_publicidad',          'PublicidadController',                 ['only' => ['index', 'show', 'store','update','destroy']]);
+    Route::get('catalogos-seguimiento', 'VerificacionSanitariaController@catalogos');
+    //Route::post('registro_dictamen',            'DictamenTecnicoController',    ['only' => ['index', 'show', 'store','update','destroy']]);
 
     Route::resource('tema', 'TemaController',    ['only' => ['index', 'show', 'store','update','destroy']]);
         
