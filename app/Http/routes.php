@@ -85,7 +85,16 @@ Route::group(['middleware' => 'jwt'], function () {
     Route::resource('registro_aviso',               'AvisosController',                 ['only' => ['index', 'show', 'store','update','destroy']]);
     Route::resource('registro_publicidad',          'PublicidadController',                 ['only' => ['index', 'show', 'store','update','destroy']]);
     Route::get('catalogos-seguimiento', 'VerificacionSanitariaController@catalogos');
-    //Route::post('registro_dictamen',            'DictamenTecnicoController',    ['only' => ['index', 'show', 'store','update','destroy']]);
+    
+    //REPORTE DE SEGUIMIENTO
+    Route::resource('reporte-seguimiento-verificacion',         'ReporteSeguimientoVerificacionController',    ['only' => ['index']]);
+    Route::resource('reporte-seguimiento-dictamen',             'ReporteSeguimientoDictamenController',    ['only' => ['index']]);
+    Route::resource('reporte-seguimiento-resolucion',           'ReporteSeguimientoResolucionController',    ['only' => ['index']]);
+    Route::resource('reporte-seguimiento-notificacion',         'ReporteSeguimientoNotificacionController',    ['only' => ['index']]);
+    Route::resource('reporte-seguimiento-licencia',             'ReporteSeguimientoLicenciaController',    ['only' => ['index']]);
+    Route::resource('reporte-seguimiento-aviso',                'ReporteSeguimientoAvisoController',    ['only' => ['index']]);
+    Route::resource('reporte-seguimiento-publicidad',           'ReporteSeguimientoPublicidadController',    ['only' => ['index']]);
+    //
 
     Route::resource('tema', 'TemaController',    ['only' => ['index', 'show', 'store','update','destroy']]);
         
