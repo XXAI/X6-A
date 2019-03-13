@@ -95,6 +95,8 @@ class SeguimientoDenunciaController extends Controller
                 
                 $denuncia->idEstatus = $parametros['idEstatus'];
                 $denuncia->update();
+            }else{
+                return Response::json(['error' => 'No se puede registrar el nuevo seguimiento, por que se encuentra en estatus: no procede o concluido.'], 500);
             }
            
             DB::commit();
