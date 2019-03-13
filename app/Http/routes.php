@@ -19,6 +19,11 @@ Route::post('obtener-token',    'AutenticacionController@autenticar');
 Route::post('refresh-token',    'AutenticacionController@refreshToken');
 Route::get('check-token',       'AutenticacionController@verificar');
 
+Route::get('catalogo-estados',     'CatalogosController@Estados');
+Route::get('catalogo-municipio',   'CatalogosController@Municipios');
+Route::get('catalogo-localidad',   'CatalogosController@Localidad');
+
+Route::resource('denuncia', 'DenunciaController',    ['only' => [ 'show', 'store']]);
 
 
 Route::group(['middleware' => 'jwt'], function () {
@@ -27,6 +32,7 @@ Route::group(['middleware' => 'jwt'], function () {
     Route::resource('roles', 'RolController',           ['only' => ['index', 'show', 'store','update','destroy']]);
     Route::resource('permisos', 'PermisoController',    ['only' => ['index', 'show', 'store','update','destroy']]);
     
+    Route::resource('seguimiento-denuncia', 'SeguimientoDenunciaController',    ['only' => [ 'index', 'show', 'store','update','destroy']]);
 
     Route::resource('unidades-medicas', 'UnidadesMedicasController',    ['only' => ['index']]);
 
